@@ -81,7 +81,7 @@ public class Main extends JFrame {
         Action showInformationAction = new AbstractAction("О программе") {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(Main.this, "Бубен Иван ✔ \n8 группа ✔\n2-й курс ✔\n☺☺☺",
+                JOptionPane.showMessageDialog(Main.this, "Сирота Андрей ✔ \n8 группа ✔\n2-й курс ✔\n☺☺☺",
                         "Информация о студенте", JOptionPane.PLAIN_MESSAGE);
             }
         };
@@ -147,3 +147,21 @@ public class Main extends JFrame {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
+    // Класс-слушатель событий, связанных с отображением меню
+    private class GraphicsMenuListener implements MenuListener {
+        // Обработчик, вызываемый перед показом меню
+        public void menuSelected(MenuEvent e) {
+            // Доступность или недоступность элементов меню "График" определяется загруженностью данных
+            showAxisMenuItem.setEnabled(fileLoaded);
+            showMarkersMenuItem.setEnabled(fileLoaded);
+        }
+
+        // Обработчик, вызываемый после того, как меню исчезло с экрана
+        public void menuDeselected(MenuEvent e) {
+        }
+
+        // Обработчик, вызываемый в случае отмены выбора пункта меню (очень редкая ситуация)
+        public void menuCanceled(MenuEvent e) {
+        }
+    }
+}
