@@ -78,3 +78,72 @@ public class Main extends JFrame {
         };
         JMenu refMenu = new JMenu("Справка");
         menuBar.add(refMenu);
+        Action showInformationAction = new AbstractAction("О программе") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(Main.this, "Бубен Иван ✔ \n8 группа ✔\n2-й курс ✔\n☺☺☺",
+                        "Информация о студенте", JOptionPane.PLAIN_MESSAGE);
+            }
+        };
+        JMenuItem showInformationMenuItem = refMenu.add(showInformationAction);
+        showInformationMenuItem.setEnabled(true);
+        showAxisMenuItem = new JCheckBoxMenuItem(showAxisAction);
+        // Добавить соответствующий элемент в меню
+        graphicsMenu.add(showAxisMenuItem);
+        // Элемент по умолчанию включен (отмечен флажком)
+        showAxisMenuItem.setSelected(true);
+        // Повторить действия для элемента "Показывать маркеры точек"
+        Action showMarkersAction = new AbstractAction("Показывать маркеры точек") {
+            public void actionPerformed(ActionEvent event) {
+                // по аналогии с showAxisMenuItem
+                display.setShowMarkers(showMarkersMenuItem.isSelected());
+            }
+        };
+        showMarkersMenuItem = new JCheckBoxMenuItem(showMarkersAction);
+        graphicsMenu.add(showMarkersMenuItem);
+        showMarkersMenuItem.setSelected(true);
+
+        Action resetGraphicsAction = new AbstractAction("Отменить все изменения") {
+            public void actionPerformed(ActionEvent event) {
+                Main.this.display.reset();
+            }
+        };
+        resetGraphicsMenuItem = new JMenuItem(resetGraphicsAction);
+        graphicsMenu.add(resetGraphicsMenuItem);
+        resetGraphicsMenuItem.setEnabled(false);
+        // Зарегистрировать обработчик событий, связанных с меню "График"
+        graphicsMenu.addMenuListener(new GraphicsMenuListener());
+        // Установить GraphicsDisplay в цент граничной компоновки
+        getContentPane().add(display, BorderLayout.CENTER);
+    }
+
+    // Считывание данных графика из существующего файла
+    protected void openGraphics(File selectedFile) {
+        try {
+            DataInputStream in = new DataInputStream(new FileInputStream(selectedFile));
+            ArrayList graphicsData = new ArrayList(50);
+            while (in.available() > 0) {
+                Double x = Double.valueOf(in.readDouble());
+                Double y = Double.valueOf(in.readDouble());
+                graphicsData.add(new Double[] { x, y });
+            }
+            if (graphicsData.size() > 0) {
+                fileLoaded = true;
+                resetGraphicsMenuItem.setEnabled(true);
+                display.showGraphics(graphicsData);
+            }
+        }catch (FileNotFoundException e){
+            JOptionPane.showMessageDialog(Main.this, "Указанный файл не найден", "Ошибка загрузки данных", JOptionPane.WARNING_MESSAGE);
+            return;
+        }catch (IOException e){
+            JOptionPane.showMessageDialog(Main.this, "Ошибка чтения  координат точек из файла", "Ошибка загрузки данных",
+                    JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    public static void main(String[] args) {
+        // Создать и показать экземпляр главного окна приложения
+        Main frame = new Main();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
