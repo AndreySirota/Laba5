@@ -89,3 +89,92 @@ public class GraphicsDisplay extends JPanel {
         }
         zoomToRegion(minX, maxY, maxX, minY);
     }
+
+    public void setShowAxis(boolean showAxis) {
+        this.showAxis = showAxis;
+        repaint();
+    }
+
+    public void setShowMarkers(boolean showMarkers) {
+        this.showMarkers = showMarkers;
+        repaint();
+    }
+    public void displayGraphics(ArrayList<Double[]> graphicsData) {
+        this.graphicsData = graphicsData;
+        this.originalData = new ArrayList(graphicsData.size());
+        Iterator var3 = graphicsData.iterator();
+
+        while(var3.hasNext()) {
+            Double[] point = (Double[])var3.next();
+            Double[] newPoint = new Double[]{new Double(point[0]), new Double(point[1])};
+            this.originalData.add(newPoint);
+        }
+
+        this.minX = ((Double[])graphicsData.get(0))[0];
+        this.maxX = ((Double[])graphicsData.get(graphicsData.size() - 1))[0];
+        this.minY = ((Double[])graphicsData.get(0))[1];
+        this.maxY = this.minY;
+
+        for(int i = 1; i < graphicsData.size(); ++i) {
+            if (((Double[])graphicsData.get(i))[1] < this.minY) {
+                this.minY = ((Double[])graphicsData.get(i))[1];
+            }
+
+            if (((Double[])graphicsData.get(i))[1] > this.maxY) {
+                this.maxY = ((Double[])graphicsData.get(i))[1];
+            }
+        }
+
+        this.zoomToRegion(this.minX, this.maxY, this.maxX, this.minY);
+    }
+
+    public void zoomToRegion(double x1, double y1, double x2, double y2) {
+        this.viewport[0][0] = x1;
+        this.viewport[0][1] = y1;
+        this.viewport[1][0] = x2;
+        this.viewport[1][1] = y2;
+        this.repaint();
+    }
+
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        this.scaleX = this.getSize().getWidth() / (this.viewport[1][0] - this.viewport[0][0]);
+        this.scaleY = this.getSize().getHeight() / (this.viewport[0][1] - this.viewport[1][1]);
+        if (this.graphicsData != null && this.graphicsData.size() != 0) {
+            Graphics2D canvas = (Graphics2D)g;
+            this.paintAxis(canvas);
+            this.paintGraphics(canvas);
+            this.paintMarkers(canvas);
+            this.paintLabels(canvas);
+            this.paintSelection(canvas);
+        }
+    }
+
+    private void paintSelection(Graphics2D canvas) {
+        if (this.scaleMode) {
+            canvas.setStroke(this.selectionStroke);
+            canvas.setColor(Color.BLACK);
+            canvas.draw(this.selectionRect);
+        }
+    }
+
+    protected void paintGraphics (Graphics2D canvas) {
+        canvas.setStroke(this.graphicsStroke);
+        canvas.setColor(Color.PINK);
+        // Линии
+        Double currentX = null;
+        Double currentY = null;
+        for (Double[] point : this.graphicsData)
+        {
+            if ((point[0].doubleValue() >= this.viewport[0][0]) && (point[1].doubleValue() <= this.viewport[0][1]) &&
+                    (point[0].doubleValue() <= this.viewport[1][0]) && (point[1].doubleValue() >= this.viewport[1][1]))
+            {
+                if ((currentX != null) && (currentY != null)) {
+                    canvas.draw(new Line2D.Double(xyToPoint(currentX.doubleValue(), currentY.doubleValue()),
+                            xyToPoint(point[0].doubleValue(), point[1].doubleValue())));
+                }
+                currentX = point[0];
+                currentY = point[1];
+            }
+        }
+    }
